@@ -2,8 +2,19 @@
 import csv
 import random
 def RecordStats(filename, player, game_number, attempts):
-    with open(filename, mode='a') as wordle_stats:
+    with open(filename, mode='a+') as wordle_stats:
         wordledex = csv.writer(wordle_stats, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+        #gamechecker = csv.reader(wordle_stats, delimiter=',')
+        #for row in gamechecker: # Doesn't seem to be working
+        #    # Checks to see if Sqwordle has already recorded that game for the player
+        #    if (row == []) or (int(row[0]) != player):
+        #        continue
+        #    elif (row[1] == game_number):
+        #        # It's assumed that the first check will confirm the player id.
+        #        return
+        #    else:
+        #        continue
+        # If it makes it this far, we will add the game to the stats.
         wordledex.writerow([player, game_number, attempts])
 
 def ReadStats(filename, player):

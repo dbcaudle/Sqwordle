@@ -1,5 +1,7 @@
 # sqwordle.py
 import random
+import discord
+import re
 
 from discord.ext import commands
 from dotenv import dotenv_values
@@ -29,7 +31,6 @@ async def nine_nine(ctx):
 
 @bot.command(name='wordle-gun',  help='Displays team stats for the specified Wordle')
 async def wordle_stats(ctx, *, game_number = ''):
-    guild_id = ctx.message.channel.guild.id
 
     if len(game_number) == 0:
         await ctx.send('Try again with game number. (!wordle-gun 230)')
@@ -42,7 +43,7 @@ async def wordle_stats(ctx, *, game_number = ''):
 
     messages = await ctx.channel.history(limit=400).flatten()
     for msg in messages:
-        if msg.author.id == 938836891741069382: #self
+        if msg.author == bot.user: #self
             continue
         
         checkMsg = 'Wordle ' + game_number
@@ -64,9 +65,6 @@ async def wordle_stats(ctx, *, game_number = ''):
                     daily_winners.append(msg.author.id)
                 elif tries_taken == low_score:
                     daily_winners.append(msg.author.id)
-            
-            filename = 'wordle_stats_' + str(guild_id) + '.csv'
-            RecordStats(filename, msg.author.id, game_number, tries_taken)
 
             total_attempts = total_attempts + tries_taken
             total_players = total_players + 1
@@ -114,6 +112,28 @@ async def wordle_stats(ctx, *, user = ''):
     filename = 'wordle_stats_' + str(guild_id) + '.csv'
     sendString = ReadStats(filename, int(player_id))
     await ctx.send(sendString)
+
+@bot.event
+async def on_message(message):
+    if message.author == bot.user:
+        return
+
+    if re.search("Wordle \d\d\d \d/\d", message.content): # Will fail when Wordle # == 1000
+        guild_id = message.channel.guild.id
+
+        lhs, rhs = message.content.split('/')
+        game_number = lhs[7:10]
+        tries_taken = lhs[-1]
+        if tries_taken == 'X':
+            tries_taken = 7
+        else:
+            tries_taken = int(tries_taken)
+
+        # Record stats
+        filename = 'wordle_stats_' + str(guild_id) + '.csv'
+        RecordStats(filename, message.author.id, game_number, tries_taken)
+        # Add checkmark
+        await message.add_reaction('\U00002705')
 
 
 bot.run(TOKEN)
