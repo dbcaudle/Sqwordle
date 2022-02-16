@@ -1,6 +1,5 @@
 # sqwordle.py
 import random
-import discord
 import re
 
 from discord.ext import commands
@@ -134,6 +133,9 @@ async def on_message(message):
         RecordStats(filename, message.author.id, game_number, tries_taken)
         # Add checkmark
         await message.add_reaction('\U00002705')
+    
+    # on_message by default disables bot commands. This forces bot to look for commands
+    await bot.process_commands(message)
 
 
 bot.run(TOKEN)
