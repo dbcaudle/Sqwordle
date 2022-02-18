@@ -117,7 +117,7 @@ async def on_message(message):
     if message.author == bot.user:
         return
 
-    if re.search("Wordle \d\d\d \d/\d", message.content): # Will fail when Wordle # == 1000
+    if re.search("Wordle \d\d\d \d/\d", message.content) or re.search("Wordle \d\d\d X/\d", message.content): # Will fail when Wordle # == 1000
         guild_id = message.channel.guild.id
 
         lhs, rhs = message.content.split('/')
