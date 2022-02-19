@@ -100,7 +100,7 @@ async def wordle_stats(ctx, *, user = ''):
     # Get user id
     if len(user) == 0:
         player_id = ctx.message.author.id
-    elif not user.startswith('<@!'):
+    elif not user.startswith('<@'):
         await ctx.send('Invalid user handle!')
         return
     else:
