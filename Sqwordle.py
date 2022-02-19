@@ -23,16 +23,18 @@ async def nine_nine(ctx):
             'Cool. Cool cool cool cool cool cool cool, '
             'no doubt no doubt no doubt no doubt.'
         ),
+        'Love, it sustains you. It\'s like oatmeal.',
+        'Good to see you. But if you\'re here, who\'s guarding Hades?'
     ]
 
     response = random.choice(brooklyn_99_quotes)
     await ctx.send(response)
 
-@bot.command(name='wordle-gun',  help='Displays team stats for the specified Wordle')
+@bot.command(name='bubble',  help='Displays server stats for the specified Wordle')
 async def wordle_stats(ctx, *, game_number = ''):
 
     if len(game_number) == 0:
-        await ctx.send('Try again with game number. (!wordle-gun 230)')
+        await ctx.send('Try again with game number. (!bubble 230)')
         return
 
     total_attempts = 0
@@ -91,7 +93,7 @@ async def wordle_stats(ctx, *, game_number = ''):
         
         await ctx.send(sendString)
 
-@bot.command(name='wordle-dex',  help='Displays wordledex entry for the player')
+@bot.command(name='dex',  help='Displays wordledex entry for the player')
 async def wordle_stats(ctx, *, user = ''):
     guild_id = ctx.message.channel.guild.id
 
