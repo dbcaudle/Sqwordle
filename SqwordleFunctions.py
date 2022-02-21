@@ -35,12 +35,12 @@ def ReadStats(filename, player):
                 if int(row[2]) == 7:
                     lost_games = lost_games + 1
                 else:
-                    tot_score = tot_score + int(row[2])
                     if int(row[2]) > worst_game:
                         worst_game = int(row[2])
                     if int(row[2]) < best_game:
                         best_game = int(row[2])
                 
+                tot_score = tot_score + int(row[2])
                 tot_games = tot_games + 1
     
     if tot_games == 0:
