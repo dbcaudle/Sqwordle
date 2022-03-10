@@ -2,6 +2,8 @@
 import random
 import re
 
+import asyncio
+import discord
 from discord.ext import commands
 from dotenv import dotenv_values
 from numpy import average
@@ -11,8 +13,11 @@ from SqwordleFunctions import *
 temp = dotenv_values(".env") 
 TOKEN = temp['DISCORD_TOKEN']
 
-bot=commands.Bot(command_prefix='!')
+intents = discord.Intents.default()
+intents.members=True
+bot=commands.Bot(command_prefix='!', intents=intents)
 
+##### 99 Command #####
 @bot.command(name='99', help='Responds with a random quote from Brooklyn 99')
 async def nine_nine(ctx):
 
@@ -30,6 +35,7 @@ async def nine_nine(ctx):
     response = random.choice(brooklyn_99_quotes)
     await ctx.send(response)
 
+##### Bubble Command #####
 @bot.command(name='bubble',  help='Displays server stats for the specified Wordle')
 async def wordle_stats(ctx, *, game_number = ''):
 
@@ -93,6 +99,7 @@ async def wordle_stats(ctx, *, game_number = ''):
         
         await ctx.send(sendString)
 
+##### Dex Command #####
 @bot.command(name='dex',  help='Displays wordledex entry for the player')
 async def wordle_stats(ctx, *, user = ''):
     guild_id = ctx.message.channel.guild.id
@@ -114,6 +121,7 @@ async def wordle_stats(ctx, *, user = ''):
     sendString = ReadStats(filename, int(player_id))
     await ctx.send(sendString)
 
+##### Listen for Wordle Score Event #####
 @bot.event
 async def on_message(message):
     if message.author == bot.user:
@@ -138,6 +146,48 @@ async def on_message(message):
     
     # on_message by default disables bot commands. This forces bot to look for commands
     await bot.process_commands(message)
+
+##### Timed Questions #####
+async def my_background_task(channel_id):
+    
+    greeting = [ 
+        'Hey',
+        'So',
+        'I was curious'
+        ]
+    prompt = [
+        'what music are you listening to this week?',
+        'how\'s the job treating you?',
+        'what\'s one good thing that happened to you this week?',
+        'watch any good shows recently?',
+        'if I gave you $1m to spend frivolously, what would you buy?',
+        'where do you want to go on your next vacation?',
+    ]
+
+    await bot.wait_until_ready()
+
+    channel = bot.get_channel(id=channel_id) # replace with channel_id
+    while not bot.is_closed():
+        
+        user_id = bot.user
+        while user_id == bot.user:
+            user_id = random.choice(channel.guild.members)
+
+        user = ' <@' + str(user_id.id) + '>,'
+        
+        response = random.choice(greeting) + user + random.choice(prompt)
+        await channel.send(response)
+
+        # Random question every 1-5 days.
+        days = random.randint(1,5) * random.randint(79200, 93600) #seconds in a day
+
+        await asyncio.sleep(days)
+
+##### Start Questions Command #####
+@bot.command(name='IChooseYou', help='Initiates random questions every few days.')
+async def startchat(ctx):
+    channel_id = ctx.channel.id
+    bot.loop.create_task(my_background_task(channel_id))
 
 
 bot.run(TOKEN)
