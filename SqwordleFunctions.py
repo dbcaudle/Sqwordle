@@ -51,7 +51,7 @@ def ReadStats(filename, player):
 
         sendString = ('Wordle Stats for ' + '<@' + str(player) + '>:' + '\n' +
                       'Games Played: ' + str(tot_games) + '\n' +
-                      'Average Score: Somewhere between 1 and 7. Just relax and enjoy today\'s puzsle.\n' + #str(avg) + '\n' +
+                      'Average Score: Do it for the team score. You\'re a winner in my book! But also you are virtually worthless in terms of both power and speed...\n' + #str(avg) + '\n' +
                       'Best Game: ' + str(best_game) + '\n' +
                       'Worst Game: ' + str(worst_game) + '\n\n' +
                       dex_entry)
