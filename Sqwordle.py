@@ -6,12 +6,14 @@ import asyncio
 import discord
 from discord.ext import commands
 from dotenv import dotenv_values
-from numpy import average
 
 from SqwordleFunctions import *
+from SQLite3_tools import *
 
 temp = dotenv_values(".env") 
 TOKEN = temp['DISCORD_TOKEN']
+
+db_file = 'Data\\sqwordle.db'
 
 intents = discord.Intents.default()
 intents.members=True
@@ -43,39 +45,9 @@ async def wordle_stats(ctx, *, game_number = ''):
         await ctx.send('Try again with game number. (!bubble 230)')
         return
 
-    total_attempts = 0
-    total_players = 0
-    low_score = 99
-    daily_winners = []
 
-    messages = await ctx.channel.history(limit=400).flatten()
-    for msg in messages:
-        if msg.author == bot.user: #self
-            continue
-        
-        checkMsg = 'Wordle ' + game_number
-        if checkMsg in msg.content:
-
-            #for user_id in total_players:
-            #    if msg.author.id == user_id:
-            #        break
-            MsgHeader = msg.content[:14]
-            lhs, rhs = MsgHeader.split('/')
-            tries_taken = lhs[-1]
-            if tries_taken == 'X':
-                tries_taken = 7
-            else:
-                tries_taken = int(tries_taken)
-                if tries_taken < low_score:
-                    low_score = tries_taken
-                    daily_winners.clear()
-                    daily_winners.append(msg.author.id)
-                elif tries_taken == low_score:
-                    daily_winners.append(msg.author.id)
-
-            total_attempts = total_attempts + tries_taken
-            total_players = total_players + 1
-    
+    # Get row from sql
+    total_players, total_attempts, low_score, daily_winners = GameStats(db_file, int(game_number))
     if total_players == 0:
         await ctx.send('No players for Wordle ' + str(game_number))
     else:
@@ -106,7 +78,7 @@ async def wordle_stats(ctx, *, user = ''):
 
     # Get user id
     if len(user) == 0:
-        player_id = ctx.message.author.id
+        player_id = str(ctx.message.author.id)
     elif not user.startswith('<@'):
         await ctx.send('Invalid user handle!')
         return
@@ -117,8 +89,7 @@ async def wordle_stats(ctx, *, user = ''):
             if ch.isdigit():
                 player_id += ch
 
-    filename = 'wordle_stats_' + str(guild_id) + '.csv'
-    sendString = ReadStats(filename, int(player_id))
+    sendString = ReadStats(db_file, player_id)
     await ctx.send(sendString)
 
 ##### Listen for Wordle Score Event #####
@@ -138,9 +109,9 @@ async def on_message(message):
         else:
             tries_taken = int(tries_taken)
 
-        # Record stats
-        filename = 'wordle_stats_' + str(guild_id) + '.csv'
-        RecordStats(filename, message.author.id, game_number, tries_taken)
+        # Record stats using SQL
+        RecordStats(db_file, str(message.author.id), int(game_number), tries_taken)
+        
         # Add checkmark
         await message.add_reaction('\U00002705')
     

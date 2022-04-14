@@ -1,61 +1,89 @@
 # Additional functions for Sqeordle
-import csv
 import random
-def RecordStats(filename, player, game_number, attempts):
-    with open(filename, mode='a+') as wordle_stats:
-        wordledex = csv.writer(wordle_stats, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-        #gamechecker = csv.reader(wordle_stats, delimiter=',')
-        #for row in gamechecker: # Doesn't seem to be working
-        #    # Checks to see if Sqwordle has already recorded that game for the player
-        #    if (row == []) or (int(row[0]) != player):
-        #        continue
-        #    elif (row[1] == game_number):
-        #        # It's assumed that the first check will confirm the player id.
-        #        return
-        #    else:
-        #        continue
-        # If it makes it this far, we will add the game to the stats.
-        wordledex.writerow([player, game_number, attempts])
+import numpy
+from sqlite3 import Error
+from SQLite3_tools import AddScore, create_connection
 
-def ReadStats(filename, player):
+def InitSqwordleTable(conn):
+    create_wordle_stats_table = '''CREATE TABLE IF NOT EXISTS wordlestats (
+                                id integer PRIMARY KEY,
+                                game integer,
+                                word text)'''
+    conn.execute(create_wordle_stats_table)
 
-    tot_score = 0
-    tot_games = 0
-    worst_game = 0
-    best_game = 9
-    lost_games = 0
+def RecordStats(db_file, player, game, score):
+    # Record stats using SQL
+    conn = create_connection(db_file)
+    InitSqwordleTable(conn)
+    AddScore(conn, game, None, player, score)
+    conn.close()
 
-    with open(filename, mode='r') as wordle_stats:
-        wordledex = csv.reader(wordle_stats, delimiter=',')
+def ReadStats(db_file, player):
 
-        for row in wordledex:
-            if (row == []) or (int(row[0]) != player):
-                continue
-            else:
-                if int(row[2]) == 7:
-                    lost_games = lost_games + 1
-                else:
-                    if int(row[2]) > worst_game:
-                        worst_game = int(row[2])
-                    if int(row[2]) < best_game:
-                        best_game = int(row[2])
-                
-                tot_score = tot_score + int(row[2])
-                tot_games = tot_games + 1
-    
-    if tot_games == 0:
+    # tot_games; tot_score; worst_game; best_game
+    conn = create_connection(db_file)
+    curse = conn.cursor()
+    query = 'SELECT u' + player + ' FROM wordlestats'
+    try:
+        scores = [score[0] for score in curse.execute(query)]
+    except Error as e:
+        print(e) # Should output this to error log
         sendString = 'No stats for <@' + str(player) + '>'
     else:
-        avg = format(tot_score / tot_games, '.2f')
+        
+        tot_games = numpy.size(scores)
+        avg = format(numpy.mean(scores), '.2f')
+        if max(scores) == 7:
+            worst_game = 'DNF'
+        else:
+            worst_game = max(scores)
+        best_game =  min(scores)
+        # Find number of failed games
+
         dex_entry = Wordledex_Entry(player)
 
         sendString = ('Wordle Stats for ' + '<@' + str(player) + '>:' + '\n' +
                       'Games Played: ' + str(tot_games) + '\n' +
-                      'Average Score: Do it for the team score. You\'re a winner in my book! But also you are virtually worthless in terms of both power and speed...\n' + #str(avg) + '\n' +
+                      'Average Score: ' + str(avg) + '\n' +
                       'Best Game: ' + str(best_game) + '\n' +
                       'Worst Game: ' + str(worst_game) + '\n\n' +
                       dex_entry)
     return sendString
+    
+def GameStats(db_file, game):
+
+    total_players = 0
+    total_attempts = 0
+    low_score = 99
+    daily_winners = []
+
+    conn = create_connection(db_file)
+    curse = conn.cursor()
+    
+    cols = conn.execute('SELECT * FROM wordlestats')
+    players = [description[0] for description in cols.description]
+
+    curse.execute('SELECT * FROM wordlestats WHERE game=?', (game,))
+    row = curse.fetchall()
+    if len(row) == 0:
+        return 0, 0, 0, 0
+
+    for iScore in range(len(row[0])):
+        if iScore >= 3:
+            score = row[0][iScore]
+            player = players[iScore][1:len(players[iScore])]
+            total_players = total_players + 1
+            total_attempts = total_attempts + score
+
+
+            if score < low_score:
+                low_score = score
+                daily_winners.clear()
+                daily_winners.append(player)
+            elif score == low_score:
+                daily_winners.append(player)
+    
+    return total_players, total_attempts, low_score, daily_winners
 
 def Wordledex_Entry(playerID):
     player = '<@' + str(playerID) + '>'
