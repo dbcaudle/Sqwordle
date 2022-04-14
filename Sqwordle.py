@@ -13,7 +13,7 @@ from SQLite3_tools import *
 temp = dotenv_values(".env") 
 TOKEN = temp['DISCORD_TOKEN']
 
-db_file = 'Data\\sqwordle.db'
+db_file = 'sqwordle.db'
 
 intents = discord.Intents.default()
 intents.members=True
@@ -44,10 +44,12 @@ async def wordle_stats(ctx, *, game_number = ''):
     if len(game_number) == 0:
         await ctx.send('Try again with game number. (!bubble 230)')
         return
+    
+    guild_members = []
+    for member in ctx.guild.members:
+        guild_members.append(member.id)
 
-
-    # Get row from sql
-    total_players, total_attempts, low_score, daily_winners = GameStats(db_file, int(game_number))
+    total_players, total_attempts, low_score, daily_winners = GameStats(db_file, int(game_number), guild_members)
     if total_players == 0:
         await ctx.send('No players for Wordle ' + str(game_number))
     else:

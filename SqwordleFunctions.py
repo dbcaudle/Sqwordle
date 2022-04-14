@@ -50,7 +50,7 @@ def ReadStats(db_file, player):
                       dex_entry)
     return sendString
     
-def GameStats(db_file, game):
+def GameStats(db_file, game, guild_members):
 
     total_players = 0
     total_attempts = 0
@@ -70,11 +70,16 @@ def GameStats(db_file, game):
 
     for iScore in range(len(row[0])):
         if iScore >= 3:
-            score = row[0][iScore]
+            # Check if player is in guild
             player = players[iScore][1:len(players[iScore])]
+            member_count = guild_members.count(int(player))
+            if member_count == 0:
+                continue
+
+            score = row[0][iScore]
+            
             total_players = total_players + 1
             total_attempts = total_attempts + score
-
 
             if score < low_score:
                 low_score = score
@@ -88,6 +93,7 @@ def GameStats(db_file, game):
 def Wordledex_Entry(playerID):
     player = '<@' + str(playerID) + '>'
 
+    # Add to SQL table
     entry = random.randint(1,20)
     if entry == 1:
         dex_entry = player + '\'s body temperature is approximately 18,000 degrees F.'
