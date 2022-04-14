@@ -30,9 +30,10 @@ def ReadStats(db_file, player):
         print(e) # Should output this to error log
         sendString = 'No stats for <@' + str(player) + '>'
     else:
-        
+        scores = list(filter(None, scores))
         tot_games = numpy.size(scores)
-        avg = format(numpy.mean(scores), '.2f')
+        #avg = numpy.mean(scores)
+        avg = format(numpy.nanmean(scores), '.2f')
         if max(scores) == 7:
             worst_game = 'DNF'
         else:
@@ -77,6 +78,8 @@ def GameStats(db_file, game, guild_members):
                 continue
 
             score = row[0][iScore]
+            if score == None:
+                continue
             
             total_players = total_players + 1
             total_attempts = total_attempts + score
