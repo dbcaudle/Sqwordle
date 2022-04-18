@@ -2,7 +2,7 @@
 import random
 import numpy
 from sqlite3 import Error
-from SQLite3_tools import AddScore, create_connection
+from SQLite3_tools import AddScore, create_connection, WriteToLog
 
 def InitSqwordleTable(conn):
     create_wordle_stats_table = '''CREATE TABLE IF NOT EXISTS wordlestats (
@@ -27,7 +27,7 @@ def ReadStats(db_file, player):
     try:
         scores = [score[0] for score in curse.execute(query)]
     except Error as e:
-        print(e) # Should output this to error log
+        WriteToLog(e) # Should output this to error log
         sendString = 'No stats for <@' + str(player) + '>'
     else:
         scores = list(filter(None, scores))

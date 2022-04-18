@@ -35,6 +35,7 @@ async def nine_nine(ctx):
     ]
 
     response = random.choice(brooklyn_99_quotes)
+    WriteToLog(response)
     await ctx.send(response)
 
 ##### Bubble Command #####
@@ -71,6 +72,7 @@ async def wordle_stats(ctx, *, game_number = ''):
                       'Congratulations to ' + winner_list + ' with a score of ' + 
                       str(low_score))
         
+        WriteToLog(sendString)
         await ctx.send(sendString)
 
 ##### Dex Command #####
@@ -92,6 +94,7 @@ async def wordle_stats(ctx, *, user = ''):
                 player_id += ch
 
     sendString = ReadStats(db_file, player_id)
+    WriteToLog(sendString)
     await ctx.send(sendString)
 
 ##### Listen for Wordle Score Event #####
@@ -115,6 +118,7 @@ async def on_message(message):
         RecordStats(db_file, str(message.author.id), int(game_number), tries_taken)
         
         # Add checkmark
+        WriteToLog('Score Recorded')
         await message.add_reaction('\U00002705')
     
     # on_message by default disables bot commands. This forces bot to look for commands

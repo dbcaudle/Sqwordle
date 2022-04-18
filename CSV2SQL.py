@@ -2,7 +2,7 @@ import csv
 import numpy
 from SQLite3_tools import AddScore, create_connection
 
-db_file = 'Data\\sqwordle.db'
+db_file = 'sqwordle.db'
 filename = ''
 
 def InitSqwordleTable(conn):
