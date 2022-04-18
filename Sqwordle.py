@@ -166,5 +166,9 @@ async def startchat(ctx):
     channel_id = ctx.channel.id
     bot.loop.create_task(my_background_task(channel_id))
 
-
-bot.run(TOKEN)
+try:
+    bot.run(TOKEN)
+except Error as e:
+    WriteToLog('########## Error ##########\n')
+    WriteToLog(e)
+    WriteToLog('\n############################\n')

@@ -100,4 +100,4 @@ def AddScore(conn, game, word, player, score):
 
 def WriteToLog(str_input):
     with open('OutputLog.txt', 'a') as o:
-        o.write(str_input)
+        o.write(str_input + '\n')
