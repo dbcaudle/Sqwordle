@@ -88,6 +88,7 @@ def AddScore(conn, game, word, player, score):
             #curse.execute('''UPDATE wordlestats SET ? = ? WHERE game = ?''', ('player1', 6, 238,))
             #curse.execute('''UPDATE wordlestats SET player1 = 6 WHERE game = 238''')
             conn.commit()
+            curse.close()
     if pexist == False:
         bPlayerAdded = AddPlayer(conn, player)
         if bPlayerAdded == True:
@@ -96,8 +97,6 @@ def AddScore(conn, game, word, player, score):
             WriteLog('Could not add score. Player does not exist.')
     else:
         WriteLog('Score updated')
-
-    conn.close()
     
 def WriteLog(s):
     with open('OutputLog.txt', 'a') as ofile:
