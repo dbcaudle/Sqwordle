@@ -1,3 +1,9 @@
+# User specified
+*.db
+OutputLog.txt
+wordle_stats_*.csv
+*.bak
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
