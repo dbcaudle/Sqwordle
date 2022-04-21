@@ -13,11 +13,7 @@ def create_connection(db_file):
         conn = sqlite3.connect(db_file)
         return conn
     except Error as e:
-<<<<<<< HEAD
-        WriteToLog(e)
-=======
         WriteLog(e)
->>>>>>> production
 
     return conn
 
@@ -32,11 +28,7 @@ def create_table(conn, create_table_sql):
         c = conn.cursor()
         c.execute(create_table_sql)
     except Error as e:
-<<<<<<< HEAD
-        WriteToLog(e)
-=======
         WriteLog(e)
->>>>>>> production
 
 def add_row(conn, row_sql):
     """ create a row from the row_sql statement
@@ -47,11 +39,7 @@ def add_row(conn, row_sql):
     try:
         conn.execute(row_sql)
     except Error as e:
-<<<<<<< HEAD
-        WriteToLog(e)
-=======
         WriteLog(e)
->>>>>>> production
 
 def CheckGame(conn, game, word):
     curse = conn.cursor()
@@ -60,19 +48,11 @@ def CheckGame(conn, game, word):
     data = curse.fetchall()
     curse.close()
     if not data:
-<<<<<<< HEAD
-        WriteToLog('Game not found. Adding new row')
-        conn.execute('INSERT INTO wordlestats (game, word) VALUES (?, ?)', (game, word,))
-        conn.commit()
-    else:
-        WriteToLog('Game already exists')
-=======
         WriteLog('Game not found. Adding new row')
         conn.execute('INSERT INTO wordlestats (game, word) VALUES (?, ?)', (game, word,))
         conn.commit()
     else:
         WriteLog('Game already exists')
->>>>>>> production
 
 def AddPlayer(conn, player):
 
@@ -84,19 +64,11 @@ def AddPlayer(conn, player):
     try:
         curse = conn.cursor()
         curse.execute('Select u' + player + ' from wordlestats')
-<<<<<<< HEAD
-    except Error as e:
-        WriteToLog(e)
-        return False
-    else:
-        WriteToLog('New column added for ' + player)
-=======
         curse.close()
     except:
         return False
     else:
         WriteLog('New column added for ' + player)
->>>>>>> production
         return True
         
 def AddScore(conn, game, word, player, score):
@@ -122,15 +94,6 @@ def AddScore(conn, game, word, player, score):
         if bPlayerAdded == True:
             AddScore(conn, game, word, player, score)
         else:
-<<<<<<< HEAD
-            WriteToLog('Could not add score. Player does not exist.')
-    else:
-        WriteToLog('Score updated')
-
-def WriteToLog(str_input):
-    with open('OutputLog.txt', 'a') as o:
-        o.write(str_input + '\n')
-=======
             WriteLog('Could not add score. Player does not exist.')
     else:
         WriteLog('Score updated')
@@ -138,4 +101,3 @@ def WriteToLog(str_input):
 def WriteLog(s):
     with open('OutputLog.txt', 'a') as ofile:
         ofile.write(s + '\n')
->>>>>>> production
