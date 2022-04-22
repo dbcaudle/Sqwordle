@@ -36,7 +36,6 @@ async def nine_nine(ctx):
     ]
 
     response = random.choice(brooklyn_99_quotes)
-    WriteToLog(response)
     await ctx.send(response)
 
 ##### Bubble Command #####
@@ -52,40 +51,7 @@ async def wordle_stats(ctx, *, game_number = ''):
         guild_members.append(member.id)
 
     total_players, total_attempts, low_score, daily_winners = GameStats(db_file, int(game_number), guild_members)
-#########################################################
-    total_attempts = 0
-    total_players = 0
-    low_score = 99
-    daily_winners = []
 
-    messages = await ctx.channel.history(limit=400).flatten()
-    for msg in messages:
-        if msg.author == bot.user: #self
-            continue
-        
-        checkMsg = 'Wordle ' + game_number
-        if checkMsg in msg.content:
-
-            #for user_id in total_players:
-            #    if msg.author.id == user_id:
-            #        break
-            MsgHeader = msg.content[:14]
-            lhs, rhs = MsgHeader.split('/')
-            tries_taken = lhs[-1]
-            if tries_taken == 'X':
-                tries_taken = 7
-            else:
-                tries_taken = int(tries_taken)
-                if tries_taken < low_score:
-                    low_score = tries_taken
-                    daily_winners.clear()
-                    daily_winners.append(msg.author.id)
-                elif tries_taken == low_score:
-                    daily_winners.append(msg.author.id)
-
-            total_attempts = total_attempts + tries_taken
-            total_players = total_players + 1
-###########################################################
     if total_players == 0:
         await ctx.send('No players for Wordle ' + str(game_number))
     else:
@@ -107,7 +73,6 @@ async def wordle_stats(ctx, *, game_number = ''):
                       'Congratulations to ' + winner_list + ' with a score of ' + 
                       str(low_score))
         
-        WriteToLog(sendString)
         await ctx.send(sendString)
 
 ##### Dex Command #####
@@ -128,8 +93,7 @@ async def wordle_stats(ctx, *, user = ''):
             if ch.isdigit():
                 player_id += ch
 
-    filename = 'wordle_stats_' + str(guild_id) + '.csv'
-    sendString = ReadStats(filename, db_file, int(player_id))
+    sendString = ReadStats(db_file, int(player_id))
     await ctx.send(sendString)
 
 ##### Listen for Wordle Score Event #####
@@ -139,7 +103,6 @@ async def on_message(message):
         return
 
     if re.search("Wordle \d\d\d \d/\d", message.content) or re.search("Wordle \d\d\d X/\d", message.content): # Will fail when Wordle # == 1000
-        guild_id = message.channel.guild.id
 
         lhs, rhs = message.content.split('/')
         game_number = lhs[7:10]
@@ -150,10 +113,8 @@ async def on_message(message):
             tries_taken = int(tries_taken)
 
         # Record stats
-        filename = 'wordle_stats_' + str(guild_id) + '.csv'
-        RecordStats(filename, db_file, message.author.id, game_number, tries_taken)
+        RecordStats(db_file, message.author.id, game_number, tries_taken)
         # Add checkmark
-        WriteToLog('Score Recorded')
         await message.add_reaction('\U00002705')
     
     # on_message by default disables bot commands. This forces bot to look for commands
@@ -201,9 +162,4 @@ async def startchat(ctx):
     channel_id = ctx.channel.id
     bot.loop.create_task(my_background_task(channel_id))
 
-try:
-    bot.run(TOKEN)
-except Error as e:
-    WriteToLog('########## Error ##########\n')
-    WriteToLog(e)
-    WriteToLog('\n############################\n')
+bot.run(TOKEN)
