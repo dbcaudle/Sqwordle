@@ -51,6 +51,7 @@ async def wordle_stats(ctx, *, game_number = ''):
         guild_members.append(member.id)
 
     total_players, total_attempts, low_score, daily_winners = GameStats(db_file, int(game_number), guild_members)
+    word = GetWord(db_file, int(game_number))
 
     if total_players == 0:
         await ctx.send('No players for Wordle ' + str(game_number))
@@ -67,6 +68,7 @@ async def wordle_stats(ctx, *, game_number = ''):
         average_attempts = format(average_attempts, '.2f')
 
         sendString = ('Wordle Game ' + str(game_number) + '\n' +
+                      'Word: ||' + word + '||\n'
                       'Total Players: ' + str(total_players) + '\n' +
                       'Total Guesses: ' + str(total_attempts) + '\n' +
                       'Average Score: ' + str(average_attempts) + '\n\n' +

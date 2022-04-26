@@ -23,7 +23,7 @@ InitSqwordleTable(conn)
 InitWordles(conn)
 
 wordlestats = False
-wordles = True
+wordles = False
 
 if wordlestats == True:
     with open(filename, mode='r') as wordle_stats:
@@ -49,5 +49,22 @@ if wordles == True:
             conn.commit()
             curse.close()
             game += 1
+
+
+# Updates existing db to add words to wordlestats table
+curse = conn.cursor()
+for game in range(200, 400):
+    try:
+        curse.execute('SELECT word FROM wordles WHERE game = ?', (game,))
+    except:
+        continue
+    else:
+        data = curse.fetchall()
+        word = data[0][0]
+        conn.execute('UPDATE wordlestats SET word = ? WHERE game = ?', (word, game,))
+        conn.commit()
+
+curse.close()
+
 
 conn.close()

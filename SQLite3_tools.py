@@ -41,18 +41,21 @@ def add_row(conn, row_sql):
     except Error as e:
         WriteLog(e)
 
-def CheckGame(conn, game, word):
+def CheckGame(conn, game):
     curse = conn.cursor()
     # Does the game already exist in the table?
     curse.execute('SELECT game FROM wordlestats WHERE game = ?', (game,))
     data = curse.fetchall()
-    curse.close()
     if not data:
         WriteLog('Game not found. Adding new row')
+        curse.execute('SELECT word FROM wordles WHERE game = ?', (game,))
+        data = curse.fetchall()
+        word = data[0][0]
         conn.execute('INSERT INTO wordlestats (game, word) VALUES (?, ?)', (game, word,))
         conn.commit()
     else:
         WriteLog('Game already exists')
+    curse.close()
 
 def AddPlayer(conn, player):
 
@@ -60,7 +63,6 @@ def AddPlayer(conn, player):
     conn.execute(add_table_cmd)
 
     # Checks to see if the new column was actually created
-    # see if this actually works
     try:
         curse = conn.cursor()
         curse.execute('Select u' + player + ' from wordlestats')
@@ -71,9 +73,9 @@ def AddPlayer(conn, player):
         WriteLog('New column added for ' + player)
         return True
         
-def AddScore(conn, game, word, player, score):
+def AddScore(conn, game, player, score):
     # Checks for existing game and add if necessary
-    CheckGame(conn, game, word)
+    CheckGame(conn, game)
         
     # Get player column (Does it currently exist?)
     curse = conn.cursor()
@@ -92,7 +94,7 @@ def AddScore(conn, game, word, player, score):
     if pexist == False:
         bPlayerAdded = AddPlayer(conn, player)
         if bPlayerAdded == True:
-            AddScore(conn, game, word, player, score)
+            AddScore(conn, game, player, score)
         else:
             WriteLog('Could not add score. Player does not exist.')
     else:

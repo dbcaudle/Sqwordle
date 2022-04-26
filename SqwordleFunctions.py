@@ -17,7 +17,7 @@ def RecordStats(db_file, player, game_number, score):
     try:
         conn = create_connection(db_file)
         InitSqwordleTable(conn)
-        AddScore(conn, int(game_number), None, str(player), score)
+        AddScore(conn, int(game_number), str(player), score)
         conn.close()
     except Error as e:
         WriteError(e)
@@ -110,6 +110,18 @@ def GameStats(db_file, game, guild_members):
                 daily_winners.append(player)
     
     return total_players, total_attempts, low_score, daily_winners
+
+def GetWord(db_file, game):
+    conn = create_connection(db_file)
+    curse = conn.cursor()
+    curse.execute('SELECT word FROM wordlestats WHERE game = ?', (game,))
+    data = curse.fetchall()
+    if not data:
+        word = 'Unknown word'
+    else:
+        word = data[0][0]
+        curse.close()
+    return word
 
 def WriteError(s):
     with open('ErrorLog.txt', 'a') as efile:
