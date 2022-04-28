@@ -10,6 +10,7 @@ from numpy import average
 
 from SqwordleFunctions import *
 from SQLite3_tools import *
+from SqwordleImage import GenerateImage
 
 temp = dotenv_values(".env") 
 TOKEN = temp['DISCORD_TOKEN']
@@ -80,7 +81,6 @@ async def wordle_stats(ctx, *, game_number = ''):
 ##### Dex Command #####
 @bot.command(name='dex',  help='Displays wordledex entry for the player')
 async def wordle_stats(ctx, *, user = ''):
-    guild_id = ctx.message.channel.guild.id
 
     # Get user id
     if len(user) == 0:
@@ -163,5 +163,21 @@ async def my_background_task(channel_id):
 async def startchat(ctx):
     channel_id = ctx.channel.id
     bot.loop.create_task(my_background_task(channel_id))
+
+
+### Generate Wordle Image ###
+@bot.command(name='sketch', help='Creates a unique visualization of your wordle scores.')
+async def CreateWordleArt(ctx, *, palette = 'rainbow'):
+
+    # Get user id
+    player_id = ctx.message.author.id
+
+    bSuccess = GenerateImage(db_file, player_id, palette)
+    if bSuccess == False:
+        await ctx.send('No wordle scores')
+    else:
+        with open('wordle_image.png', "rb") as fh:
+            f = discord.File(fh, filename='wordle_image.png')
+        await ctx.send(file=f)
 
 bot.run(TOKEN)
